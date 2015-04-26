@@ -5,17 +5,17 @@
 #include <sys/socket.h>
 #include <strings.h>
 #include <string.h>
-#define NETLINK_TEST 31 // 自定义的协议号
-/** 消息类型 **/
+
+#define NETLINK_TEST 31
+
 #define NLMSG_SETECHO 0x11
 #define NLMSG_GETECHO 0x12
-/** 最大协议负荷(固定) **/
 #define MAX_PAYLOAD 101
 
 struct sockaddr_nl src_addr, dst_addr;
 struct iovec iov;
 int sockfd;
-struct nlmsghdr *nlh = NULL;
+struct nlmsghdr *nlh;
 struct msghdr msg;
 
 int main( int argc, char **argv)
@@ -25,22 +25,19 @@ int main( int argc, char **argv)
 		exit(-1);
 	}
 
-	sockfd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_TEST); // 创建NETLINK_TEST协议的socket
-	/* 设置本地端点并绑定，用于侦听 */
+	sockfd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_TEST);
 	bzero(&src_addr, sizeof(src_addr));
 	src_addr.nl_family = AF_NETLINK;
 	src_addr.nl_pid = getpid();
-	src_addr.nl_groups = 0; //未加入多播组
+	src_addr.nl_groups = 0;
 	bind(sockfd, (struct sockaddr*)&src_addr, sizeof(src_addr));
-	/* 构造目的端点，用于发送 */
 	bzero(&dst_addr, sizeof(dst_addr));
 	dst_addr.nl_family = AF_NETLINK;
-	dst_addr.nl_pid = 0; // 表示内核
-	dst_addr.nl_groups = 0; //未指定接收多播组 
-	/* 构造发送消息 */
+	dst_addr.nl_pid = 0;
+	dst_addr.nl_groups = 0;
 	nlh = malloc(NLMSG_SPACE(MAX_PAYLOAD));
-	nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD); //保证对齐
-	nlh->nlmsg_pid = getpid();/* self pid */
+	nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD);
+	nlh->nlmsg_pid = getpid();
 	nlh->nlmsg_flags = 0;
 	nlh->nlmsg_type = NLMSG_GETECHO;
 	strcpy(NLMSG_DATA(nlh), argv[1]);
@@ -51,8 +48,7 @@ int main( int argc, char **argv)
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
 
-	sendmsg(sockfd, &msg, 0); // 发送
-	/* 接收消息并打印 */
+	sendmsg(sockfd, &msg, 0);
 	memset(nlh, 0, NLMSG_SPACE(MAX_PAYLOAD));
 	recvmsg(sockfd, &msg, 0);
 	printf(" Received message payload: %s\n", NLMSG_DATA(nlh));

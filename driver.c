@@ -2,14 +2,14 @@
 #include <linux/netlink.h>
 #include <net/netlink.h>
 #include <net/net_namespace.h>
+
 #define NETLINK_TEST 31
 
 #define NLMSG_SETECHO 0x11
 #define NLMSG_GETECHO 0x12
 
-static struct sock *sk; //内核端socket
-static void nl_custom_data_ready(struct sk_buff *skb); //接收消息回调函数
-
+static struct sock *sk;
+static void nl_custom_data_ready(struct sk_buff *skb);
 int __init nl_custom_init(void)
 {
 	struct netlink_kernel_cfg nlcfg = {
@@ -35,8 +35,10 @@ static void nl_custom_data_ready(struct sk_buff *skb)
 	struct sk_buff *out_skb;
 	void *out_payload;
 	struct nlmsghdr *out_nlh;
-	int payload_len; // with padding, but ok for echo 
-	nlh = nlmsg_hdr(skb);
+
+ 	/*with padding, but ok for echo */
+	int payload_len;
+ 	nlh = nlmsg_hdr(skb);
 	switch(nlh->nlmsg_type) {
 	case NLMSG_SETECHO:
 		break;
@@ -45,12 +47,16 @@ static void nl_custom_data_ready(struct sk_buff *skb)
 		payload_len = nlmsg_len(nlh);
 		printk(KERN_INFO "payload_len = %d\n", payload_len);
 		printk(KERN_INFO "Recievid: %s, From: %d\n", (char *)payload, nlh->nlmsg_pid);
-		out_skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL); //分配足以存放默认大小的sk_buff
+		out_skb = nlmsg_new(NLMSG_DEFAULT_SIZE, GFP_KERNEL); 
+
 		if (!out_skb) goto failure;
-		out_nlh = nlmsg_put(out_skb, 0, 0, NLMSG_SETECHO, payload_len, 0); //填充协议头数据
+
+		out_nlh = nlmsg_put(out_skb, 0, 0, NLMSG_SETECHO, payload_len, 0);
+
 		if (!out_nlh) goto failure;
+
 		out_payload = nlmsg_data(out_nlh);
-		strcpy(out_payload, "[from kernel]:"); // 在响应中加入字符串，以示区别
+		strcpy(out_payload, "[from kernel]:");
 		strcat(out_payload, payload);
 		nlmsg_unicast(sk, out_skb, nlh->nlmsg_pid);
 		break;
@@ -66,4 +72,4 @@ module_exit(nl_custom_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("a simple example for custom netlink protocal family");
-MODULE_AUTHOR("RSLjdkt");
+MODULE_AUTHOR("Jim");
