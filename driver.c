@@ -10,6 +10,7 @@
 
 static struct sock *sk;
 static void nl_custom_data_ready(struct sk_buff *skb);
+
 int __init nl_custom_init(void)
 {
 	struct netlink_kernel_cfg nlcfg = {
@@ -20,15 +21,17 @@ int __init nl_custom_init(void)
 	if (!sk) {
 		printk(KERN_INFO "netlink create error!\n");
 	}
+
 	return 0;
 }
+
 void __exit nl_custom_exit(void)
 {
 	printk(KERN_INFO "existing...\n");
 	netlink_kernel_release(sk);
 }
 
-static void nl_custom_data_ready(struct sk_buff *skb)
+static int nl_custom_data_ready(struct sk_buff *skb)
 {
 	struct nlmsghdr *nlh;
 	void *payload;
@@ -63,10 +66,13 @@ static void nl_custom_data_ready(struct sk_buff *skb)
 	default:
 		printk(KERN_INFO "Unknow msgtype recieved!\n");
 	}
-	return;
+
+	return 0;
+
 failure:
 	printk(KERN_INFO " failed in fun dataready!\n");
 }
+
 module_init(nl_custom_init);
 module_exit(nl_custom_exit);
 
