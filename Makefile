@@ -5,7 +5,7 @@ PWD := $(shell pwd)
 
 all:
 	make -C $(KID) M=$(PWD) modules -Werror
-	gcc -c app.c -o app -Werror
+	gcc app.c -o app -Werror
 
 clean:
-	rm -rf *.o .cmd *.ko *.mod.c .tmp_versions
+	rm -f *.o app .* modules.order Module.symvers *.ko *.mod.c; rm -rf .tmp_versions

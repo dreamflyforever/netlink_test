@@ -31,7 +31,7 @@ void __exit nl_custom_exit(void)
 	netlink_kernel_release(sk);
 }
 
-static int nl_custom_data_ready(struct sk_buff *skb)
+static void nl_custom_data_ready(struct sk_buff *skb)
 {
 	struct nlmsghdr *nlh;
 	void *payload;
@@ -67,7 +67,7 @@ static int nl_custom_data_ready(struct sk_buff *skb)
 		printk(KERN_INFO "Unknow msgtype recieved!\n");
 	}
 
-	return 0;
+	return ;
 
 failure:
 	printk(KERN_INFO " failed in fun dataready!\n");
