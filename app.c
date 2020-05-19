@@ -51,7 +51,7 @@ int main( int argc, char **argv)
 	sendmsg(sockfd, &msg, 0);
 	memset(nlh, 0, NLMSG_SPACE(MAX_PAYLOAD));
 	recvmsg(sockfd, &msg, 0);
-	printf(" Received message payload: %s\n", NLMSG_DATA(nlh));
+	printf(" Received message payload: %s\n", (char *)NLMSG_DATA(nlh));
 
 	return 0;
 }
